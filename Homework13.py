@@ -2,6 +2,13 @@
 #Jason Chan
 #4/21/2025
 
+import ssl  # Import the ssl module
+
+# Disable SSL certificate verification
+ssl._create_default_https_context = ssl._create_unverified_context
+
+import string #this is needed for frequency function (punctuation module needed)
+
 from html.parser import HTMLParser
 
 class MyHTMLParser(HTMLParser):
@@ -15,11 +22,9 @@ class MyHTMLParser(HTMLParser):
 
 
   def handle_data(self, data):
-    """This method takes parsed data from a webpage that is not a tag and will store
-    the data in a text variable that is initialized in the constructor. Special
-    characters will be disregarded.
+    """This method takes data from a HTML webpage that is not a tag and will store
+    the data in a text variable. Special characters will be disregarded.
     """
-
     for char in data:
       if char not in string.punctuation:
         self.data += char
@@ -33,10 +38,11 @@ class MyHTMLParser(HTMLParser):
   def frequency(self, n):
     """this method should print the words that occur at least n times
     on the page"""
+    data_list = self.data.split()
     char_above_n = {}
-    for char in self.data:
-      if self.data.count(char) >= n:
-        char_above_n[char] = self.data.count(char)
+    for word in data_list:
+      if data_list.count(word) >= n:
+        char_above_n[word] = self.data.count(word)
     print("Words that occur at least", n, "times:")
     for key, value in char_above_n.items():
       print(key, value)
@@ -44,20 +50,17 @@ class MyHTMLParser(HTMLParser):
 
 
   def dump_data(self, filename):
-    pass
-        # write code to write the text extracted from the page to a file
+    """This method dumps the cleaned data from a webpage into a text file"""
+    with open(filename, "w") as file:
+      file.write(self.data)
+      # write code to write the text extracted from the page to a file
 
 if __name__ == '__main__':
   link = 'https://collegeofsanmateo.edu/wellnesscenter'
   from urllib.request import urlopen
   response = urlopen(link)
   html_page = response.read().decode().lower()
-  wellness = html_page.count('wellness')
-  print("'Wellness' occurs on the page", wellness, "times.")
-  # Output: here you should see how many times the word 'wellness' occurs on the page
   from html.parser import HTMLParser
-  parser = HTMLParser()
+  parser = MyHTMLParser()
   parser.feed(html_page)
-  # Here, add the code to test your class if this module is called as a
-  # top-level module.
-  # Make sure to add the call to frequency.
+  parser.frequency(10)
